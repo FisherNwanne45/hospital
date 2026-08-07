@@ -1,0 +1,11 @@
+{
+  "name": "Xray Theme",
+  "preview_path": "index.php",
+  "preview_colors": {
+    "primary": "#0f4c81",
+    "accent": "#1f7cc1",
+    "surface": "#f6fbff",
+    "text": "#102a43",
+    "muted": "#486581"
+  }
+}

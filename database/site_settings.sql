@@ -1,0 +1,43 @@
+CREATE TABLE IF NOT EXISTS site_settings (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    setting_key VARCHAR(100) NOT NULL UNIQUE,
+    setting_value MEDIUMTEXT NULL,
+    setting_type VARCHAR(20) NOT NULL DEFAULT 'string',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO site_settings (setting_key, setting_value, setting_type) VALUES
+('site_name', 'Private Imaging healthcare Center', 'string'),
+('site_short_name', 'VPH', 'string'),
+('site_addr_primary', '1290 Hornby Street, 2nd Floor,\nVancouver, BC V6Z 1W2, Canada', 'string'),
+('site_addr_secondary', '438 N Frederick Ave, Gaithersburg, MD 20877, United States', 'string'),
+('site_phone_primary', '+1 (236)-260-1221', 'string'),
+('site_phone_secondary', '+1 (236)-260-1221', 'string'),
+('site_url', 'http://localhost/privateimaginghealthcare', 'string'),
+('site_host', 'privateimaginghealthcare.com', 'string'),
+('site_email_primary', 'info@privateimaginghealthcare.com', 'string'),
+('site_email_secondary', 'support@privateimaginghealthcare.com', 'string'),
+('site_logo_path', 'static/images/NY_Imaging_Specialists.png', 'string'),
+('site_favicon_path', 'static/images/mri.png', 'string'),
+('installation_complete', '0', 'int'),
+('install_completed_at', '', 'string'),
+('site_theme', 'xray_theme', 'string'),
+('admin_session_timeout_minutes', '30', 'int'),
+('theme_primary', '#0f4c81', 'string'),
+('theme_accent', '#1f7cc1', 'string'),
+('theme_surface', '#f6fbff', 'string'),
+('theme_text', '#102a43', 'string'),
+('theme_muted', '#486581', 'string'),
+('theme_palettes_json', '', 'string'),
+('smtp_host', '', 'string'),
+('smtp_port', '587', 'int'),
+('smtp_username', '', 'string'),
+('smtp_password_enc', '', 'string'),
+('smtp_from_email', '', 'string'),
+('smtp_from_name', '', 'string'),
+('smtp_auth', '1', 'int'),
+('smtp_timeout', '30', 'int'),
+('smtp_encryption', 'starttls', 'string'),
+('smtp_test_to', '', 'string')
+ON DUPLICATE KEY UPDATE setting_key = setting_key;

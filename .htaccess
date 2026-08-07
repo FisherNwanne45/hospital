@@ -1,0 +1,15 @@
+RewriteEngine On
+
+# Keep portal and system directories out of theme routing.
+RewriteRule ^portal/ - [L]
+RewriteRule ^themes/ - [L]
+RewriteRule ^includes/ - [L]
+RewriteRule ^database/ - [L]
+
+# Serve existing files and directories directly.
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Route all other public requests through the root theme dispatcher.
+RewriteRule ^ index.php [L,QSA]

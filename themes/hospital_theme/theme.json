@@ -1,0 +1,11 @@
+{
+  "name": "Hospital Theme",
+  "preview_path": "index.php",
+  "preview_colors": {
+    "primary": "#1f3a5f",
+    "accent": "#4a90e2",
+    "surface": "#f3f7fb",
+    "text": "#172b45",
+    "muted": "#5b7087"
+  }
+}

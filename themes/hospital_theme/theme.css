@@ -1,0 +1,163 @@
+/* Hospital Theme color bridge (admin controlled via CSS variables) */
+body,
+.theme-hospital-theme {
+    background: var(--brand-surface);
+    color: var(--brand-text);
+}
+
+a,
+.theme-hospital-theme a,
+.theme-hospital-theme .an-head,
+.theme-hospital-theme .welcome-title,
+.theme-hospital-theme .faq-item .question,
+.theme-hospital-theme .slick-arrow:before,
+.theme-hospital-theme .readmore a {
+    color: var(--brand-accent);
+}
+
+.theme-hospital-theme .top-sec,
+.theme-hospital-theme .header-sec,
+.theme-hospital-theme .resnav-collapse,
+.theme-hospital-theme .home-banner .text-box,
+.theme-hospital-theme .footer-sec {
+    background-color: var(--brand-primary) !important;
+}
+
+.theme-hospital-theme .header-sec,
+.theme-hospital-theme .top-sec {
+    border-bottom: 1px solid var(--brand-accent);
+}
+
+.theme-hospital-theme .navbar-inverse,
+.theme-hospital-theme .navbar-inverse .navbar-nav > li > a,
+.theme-hospital-theme .address-box > span,
+.theme-hospital-theme .address-box a,
+.theme-hospital-theme .address-box p,
+.theme-hospital-theme .footer-sec,
+.theme-hospital-theme .footer-sec a,
+.theme-hospital-theme .copyright p {
+    color: #ffffff !important;
+}
+
+.theme-hospital-theme .btn,
+.theme-hospital-theme button,
+.theme-hospital-theme input[type="submit"],
+.theme-hospital-theme .tnp-submit,
+.theme-hospital-theme .wpcf7-submit,
+.theme-hospital-theme .readmore {
+    border-radius: 8px;
+}
+
+.theme-hospital-theme .btn-primary,
+.theme-hospital-theme .btn.btn-primary,
+.theme-hospital-theme .tnp-submit,
+.theme-hospital-theme .wpcf7-submit,
+.theme-hospital-theme .readmore,
+.theme-hospital-theme .slick-dots li.slick-active button,
+.theme-hospital-theme .vc_btn3,
+.theme-hospital-theme .button,
+.theme-hospital-theme input[type="submit"] {
+    background: var(--brand-primary) !important;
+    border-color: var(--brand-primary) !important;
+    color: #ffffff !important;
+}
+
+.theme-hospital-theme .btn-default,
+.theme-hospital-theme .btn.btn-default,
+.theme-hospital-theme .footer-social span {
+    background: var(--brand-accent) !important;
+    border-color: var(--brand-accent) !important;
+    color: #ffffff !important;
+}
+
+.theme-hospital-theme .service-box,
+.theme-hospital-theme .testi-box,
+.theme-hospital-theme .project-box,
+.theme-hospital-theme .blog-bio,
+.theme-hospital-theme .about-content,
+.theme-hospital-theme .faq-item,
+.theme-hospital-theme .contact-form,
+.theme-hospital-theme .card,
+.theme-hospital-theme .wpb_wrapper .wpb_text_column {
+    background: #ffffff;
+    border: 1px solid rgba(15, 31, 54, 0.12);
+    box-shadow: 0 10px 22px rgba(15, 31, 54, 0.08);
+}
+
+.theme-hospital-theme .section-heading,
+.theme-hospital-theme h1,
+.theme-hospital-theme h2,
+.theme-hospital-theme h3,
+.theme-hospital-theme h4,
+.theme-hospital-theme h5,
+.theme-hospital-theme h6,
+.theme-hospital-theme .banner-title,
+.theme-hospital-theme .banner-title-2 {
+    color: var(--brand-text);
+}
+
+.theme-hospital-theme p,
+.theme-hospital-theme li,
+.theme-hospital-theme span,
+.theme-hospital-theme .meta,
+.theme-hospital-theme .date,
+.theme-hospital-theme .copyright,
+.theme-hospital-theme .small,
+.theme-hospital-theme .sub-title {
+    color: var(--brand-muted);
+}
+
+.theme-hospital-theme .footer-sec .footer-bio h4,
+.theme-hospital-theme .footer-sec .footLinks h4,
+.theme-hospital-theme .footer-sec .menu a {
+    color: #ffffff !important;
+}
+
+.theme-hospital-theme .top-address .address-box.address-box-portal > span {
+    color: #ffffff !important;
+}
+
+.theme-hospital-theme .top-address .address-box.address-box-portal .patient-portal-top-btn {
+    display: inline-block;
+    margin-top: 6px;
+    text-decoration: none !important;
+}
+
+.theme-hospital-theme .navbar-inverse .navbar-nav > li.menu-item-patient-portal {
+    margin-left: 10px;
+}
+
+.theme-hospital-theme .navbar-inverse .navbar-nav > li.menu-item-patient-portal > a {
+    background: var(--brand-accent) !important;
+    border: 1px solid var(--brand-accent) !important;
+    border-radius: 6px;
+    color: #ffffff !important;
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+    margin: 6px 0;
+    padding: 9px 14px !important;
+    text-transform: uppercase;
+}
+
+.theme-hospital-theme .navbar-inverse .navbar-nav > li.menu-item-patient-portal > a:hover,
+.theme-hospital-theme .navbar-inverse .navbar-nav > li.menu-item-patient-portal > a:focus {
+    background: #ffffff !important;
+    color: var(--brand-primary) !important;
+}
+
+.theme-hospital-theme .resnav-nav-menu-box .menu-item-patient-portal > a {
+    background: rgba(255, 255, 255, 0.16);
+    border-radius: 6px;
+    color: #ffffff !important;
+    display: block;
+    margin-top: 8px;
+    padding: 10px 12px;
+    text-transform: uppercase;
+}
+
+.theme-hospital-theme .copyright {
+    background: var(--theme-copyright-bg, #0f213a);
+}

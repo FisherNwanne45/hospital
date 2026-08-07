@@ -1,0 +1,11 @@
+{
+  "name": "Clinic Theme",
+  "preview_path": "index.php",
+  "preview_colors": {
+    "primary": "#176b87",
+    "accent": "#64ccc5",
+    "surface": "#f4fcfb",
+    "text": "#0e3440",
+    "muted": "#49727a"
+  }
+}

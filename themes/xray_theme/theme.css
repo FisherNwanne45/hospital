@@ -1,0 +1,71 @@
+/* Blue Clinic theme package for public pages */
+.theme-xray-theme {
+    background: radial-gradient(1200px 420px at -15% -20%, rgba(15, 76, 129, 0.14), transparent 55%),
+                radial-gradient(1100px 380px at 115% 115%, rgba(31, 124, 193, 0.14), transparent 60%),
+                var(--brand-surface);
+}
+
+.theme-xray-theme #topbar {
+    background: linear-gradient(90deg, var(--theme-topbar-gradient-start, var(--brand-primary)), var(--theme-topbar-gradient-end, var(--brand-accent))) !important;
+}
+
+.theme-xray-theme #topbar .top-menu li > a {
+    color: #ffffff !important;
+}
+
+.theme-xray-theme #header {
+    border-bottom: 1px solid rgba(15, 76, 129, 0.12);
+    box-shadow: 0 10px 24px rgba(16, 42, 67, 0.07);
+}
+
+.theme-xray-theme .btn,
+.theme-xray-theme button,
+.theme-xray-theme input[type="submit"] {
+    border-radius: 999px;
+}
+
+.theme-xray-theme .btn-primary,
+.theme-xray-theme .btn.btn-primary,
+.theme-xray-theme .button,
+.theme-xray-theme a.btn:not(.btn-light):not(.btn-outline) {
+    background-color: var(--brand-primary) !important;
+    border-color: var(--brand-primary) !important;
+    color: #ffffff !important;
+}
+
+.theme-xray-theme a,
+.theme-xray-theme .text-colored,
+.theme-xray-theme .icon-box .icon i {
+    color: var(--brand-accent);
+}
+
+.theme-xray-theme #footer {
+    border-top: 1px solid rgba(15, 76, 129, 0.16);
+}
+
+.theme-xray-theme .copyright-content {
+    background: var(--theme-footer-strip-bg, #e9f4ff);
+}
+
+/* Legacy xray pages include many inline rgb(110,85,196) styles.
+   These overrides map those historical inline colors to a managed setting. */
+.theme-xray-theme .call-to-action.call-to-action-dark[style*="110,85,196"],
+.theme-xray-theme .call-to-action.call-to-action-dark[style*="110, 85, 196"],
+.theme-xray-theme #page-title[style*="110,85,196"],
+.theme-xray-theme #page-title[style*="110, 85, 196"] {
+    background-color: var(--theme-legacy-emphasis-color, #6e55c4) !important;
+}
+
+.theme-xray-theme a[style*="color:rgb(110,85,196)"],
+.theme-xray-theme a[style*="color: rgb(110,85,196)"],
+.theme-xray-theme a[style*="color:rgb(110, 85, 196)"],
+.theme-xray-theme a[style*="color: rgb(110, 85, 196)"] {
+    color: var(--theme-legacy-emphasis-color, #6e55c4) !important;
+}
+
+.theme-xray-theme [style*="border-color:rgb(110,85,196)"],
+.theme-xray-theme [style*="border-color: rgb(110,85,196)"],
+.theme-xray-theme [style*="border-color:rgb(110, 85, 196)"],
+.theme-xray-theme [style*="border-color: rgb(110, 85, 196)"] {
+    border-color: var(--theme-legacy-emphasis-color, #6e55c4) !important;
+}

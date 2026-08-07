@@ -1,0 +1,918 @@
+<?php
+/* pih settings bridge */
+$__pihRoot = __DIR__;
+while (!file_exists($__pihRoot . '/short.php') && dirname($__pihRoot) !== $__pihRoot) {
+    $__pihRoot = dirname($__pihRoot);
+}
+require_once $__pihRoot . '/short.php';
+
+$url = isset($url) ? (string) $url : "";
+$favicon_path = isset($favicon_path) ? (string) $favicon_path : "";
+$logo_path = isset($logo_path) ? (string) $logo_path : "";
+$name = isset($name) ? (string) $name : "";
+$email = isset($email) ? (string) $email : "";
+$phone = isset($phone) ? (string) $phone : "";
+$addr = isset($addr) ? (string) $addr : "";
+
+$__pihBase = rtrim((string) $url, '/');
+$__pihThemeBase = $__pihBase !== '' ? $__pihBase . '/themes/hospital_theme' : '/themes/hospital_theme';
+$__pihSitePath = (string) parse_url($__pihBase, PHP_URL_PATH);
+$__pihSitePath = $__pihSitePath !== '' ? rtrim($__pihSitePath, '/') : '';
+$__pihScheme = (string) parse_url($__pihBase, PHP_URL_SCHEME);
+$__pihHost = (string) parse_url($__pihBase, PHP_URL_HOST);
+$__pihPort = (string) parse_url($__pihBase, PHP_URL_PORT);
+$__pihOrigin = ($__pihScheme !== '' && $__pihHost !== '')
+	? $__pihScheme . '://' . $__pihHost . ($__pihPort !== '' ? ':' . $__pihPort : '')
+	: '';
+
+if (!function_exists('pih_resolve_asset_url')) {
+	function pih_resolve_asset_url($path, $base, $origin, $sitePath, $fallback)
+	{
+		$path = trim((string) $path);
+		if ($path === '') {
+			return $fallback;
+		}
+		if (preg_match('~^(?:https?:)?//~i', $path)) {
+			return $path;
+		}
+		if ($base !== '' && str_starts_with($path, $base . '/')) {
+			return $path;
+		}
+		if ($sitePath !== '' && str_starts_with($path, $sitePath . '/') && $origin !== '') {
+			return $origin . $path;
+		}
+		if (str_starts_with($path, '/')) {
+			if ($origin !== '') {
+				return $origin . $path;
+			}
+			return $base !== '' ? rtrim($base, '/') . $path : $path;
+		}
+		return ($base !== '' ? rtrim($base, '/') : '') . '/' . ltrim($path, '/');
+	}
+}
+
+$__pihFaviconUrl = pih_resolve_asset_url(
+	$favicon_path,
+	$__pihBase,
+	$__pihOrigin,
+	$__pihSitePath,
+	$__pihThemeBase . '/wp-content/themes/goring/ico/favicon.png'
+);
+$__pihLogoUrl = pih_resolve_asset_url(
+	$logo_path,
+	$__pihBase,
+	$__pihOrigin,
+	$__pihSitePath,
+	$__pihThemeBase . '/wp-content/themes/goring/images/logo.png'
+);
+$__pihPortalUrl = $__pihBase !== ''
+	? $__pihBase . '/portal/index.php'
+	: '/portal/index.php';
+$__pihMap = [
+    'Home - GORING MEDICAL - GORING MEDICAL' => $name . ' - Hospital Theme',
+    'GORING MEDICAL' => (string) $name,
+    'info@goringmedicalprojects.com' => (string) $email,
+    '+44 (0) 7584 598 649' => (string) $phone,
+    'Goring Medical Projects Ltd, 1 Trinity Farm Cottages, Barnby Moor, Retford, Notts, UK, DN22 8QW' => (string) $addr,
+    '© Copyright, Goring  Medical Projects Ltd, All Rights Reserved.' => '© Copyright, ' . (string) $name . ', All Rights Reserved.',
+    'index.html' => 'index.php',
+];
+
+ob_start(function ($__html) use ($__pihMap, $__pihThemeBase, $__pihLogoUrl, $__pihFaviconUrl, $__pihPortalUrl) {
+    $__html = str_replace(array_keys($__pihMap), array_values($__pihMap), $__html);
+
+	// Normalize mirrored logo/favicon references to admin-configured branding URLs.
+	$__html = preg_replace(
+		'~(?<=[("\'=])(?:\.\./)*wp-content/themes/goring/images/logo\.png(?=["\'])~i',
+		$__pihLogoUrl,
+		$__html
+	);
+	$__html = preg_replace(
+		'~(?<=[("\'=])(?:\.\./)*wp-content/themes/goring/ico/favicon\.png(?=["\'])~i',
+		$__pihFaviconUrl,
+		$__html
+	);
+
+    // Rebase mirrored WP asset URLs so CSS/JS/images load from this theme folder on all routes.
+    $__html = preg_replace(
+        '~(?<=[("\'=])(?:\.\./)*(wp-content|wp-includes|wp-json)/~i',
+        $__pihThemeBase . '/$1/',
+        $__html
+    );
+
+	// If logo/favicon was rebased first, force it back to admin-configured branding URLs.
+	$__html = str_replace(
+		[
+			$__pihThemeBase . '/wp-content/themes/goring/images/logo.png',
+			$__pihThemeBase . '/wp-content/themes/goring/ico/favicon.png',
+		],
+		[
+			$__pihLogoUrl,
+			$__pihFaviconUrl,
+		],
+		$__html
+	);
+
+	// Remove "About Us" from footer nav only.
+	$__html = preg_replace_callback(
+		'~(<ul[^>]*id="menu-main-menu-2"[^>]*>)(.*?)(</ul>)~is',
+		static function ($m) {
+			$items = preg_replace(
+				'~<li\b[^>]*>\s*<a\b[^>]*href="[^"]*about-us/index\.php[^"]*"[^>]*>\s*About\s+Us\s*</a>\s*</li>~is',
+				'',
+				$m[2]
+			);
+
+			return $m[1] . $items . $m[3];
+		},
+		$__html
+	);
+
+	// Remove the entire footer "ABOUT US" social column.
+	$__html = preg_replace(
+		'~<div class="col-md-3 footContent">\s*<div class="footer-bio">\s*<h4>\s*ABOUT\s+US\s*</h4>.*?</div>\s*</div>\s*(?=<div class="col-md-6 footContent">)~is',
+		'',
+		$__html,
+		1
+	);
+
+	// Rebalance remaining footer columns after About Us column removal.
+	$__html = preg_replace(
+		'~<div class="col-md-6 footContent">\s*<div class="row footer-bio footer-nav">~is',
+		'<div class="col-md-9 footContent"><div class="row footer-bio footer-nav">',
+		$__html,
+		1
+	);
+	$__html = preg_replace(
+		'~<div class="col-md-3 footContent">\s*<div class="footer-bio">\s*<h4>\s*SIGN\s+UP\s+FOR\s+NEWSLETTER\s*</h4>~is',
+		'<div class="col-md-3 footContent"><div class="footer-bio"><h4>SIGN UP FOR NEWSLETTER</h4>',
+		$__html,
+		1
+	);
+
+	// Make the three footer link groups equally sized within the 9-column area.
+	$__html = str_replace(
+		'col-md-5 col-lg-5 col-sm-5 footLinks',
+		'col-md-4 col-lg-4 col-sm-4 footLinks',
+		$__html
+	);
+	$__html = str_replace(
+		'col-md-3 col-lg-3 col-sm-3 footLinks',
+		'col-md-4 col-lg-4 col-sm-4 footLinks',
+		$__html
+	);
+
+	$__portalHref = htmlspecialchars($__pihPortalUrl, ENT_QUOTES, 'UTF-8');
+
+	// Remove any existing menu portal injections from prior wrapper versions.
+	$__html = preg_replace(
+		'~<li\b[^>]*menu-item-patient-portal[^>]*>\s*<a\b[^>]*>\s*Patient\s+Portal\s*</a>\s*</li>~is',
+		'',
+		$__html
+	);
+
+	// Replace header Office Address block with Patient Portal button.
+	$__officeReplacement = '<div class="address-box address-box-portal"><span>Patient Access</span><a class="patient-portal-top-btn btn btn-primary btn-sm" role="button" href="' . $__portalHref . '">Patient Portal</a></div>';
+	$__html = preg_replace(
+		'~<div class="address-box">\s*<span>\s*Office\s+Address\s*</span>\s*<p>.*?</p>\s*</div>~is',
+		$__officeReplacement,
+		$__html,
+		1,
+		$__officeCount
+	);
+
+	if ((int) $__officeCount === 0 && stripos($__html, 'patient-portal-top-btn') === false) {
+		$__html = preg_replace(
+			'~(<div class="top-address">)(.*?)(</div>)~is',
+			'$1$2' . $__officeReplacement . '$3',
+			$__html,
+			1
+		);
+	}
+
+	// If prior replacements create '../http://...' style paths, normalize to absolute URL.
+	$__html = preg_replace(
+		'~(?<=[("\'=])(?:\.\./)+(https?:)?//~i',
+		'$1//',
+		$__html
+	);
+
+    return $__html;
+});
+?>
+<!DOCTYPE html>
+<html lang="en-US" prefix="og: https://ogp.me/ns#">
+	
+<!-- Mirrored from goringmedicalprojects.com/ by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 06 Aug 2026 14:35:51 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>
+		<!-- Basic Page Needs
+================================================== -->
+<meta name="robots" content="follow, index" />
+		<meta charset="UTF-8" />
+				<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="description" content="">
+		<meta name="author" content="">
+		<link rel="shortcut icon" href="wp-content/themes/goring/ico/favicon.png">
+		<title>
+			Home - GORING MEDICAL - GORING MEDICAL		</title>
+		<!-- Bootstrap core CSS -->
+		<link href="wp-content/themes/goring/css/bootstrap.css" rel="stylesheet">
+		<link rel="stylesheet" type="text/css" href="wp-content/themes/goring/style.css">
+		<link rel="stylesheet" type="text/css" href="wp-content/themes/goring/css/animate.css">
+		<link rel="stylesheet" type="text/css" href="wp-content/themes/goring/slick/slick.css">
+		<link rel="stylesheet" type="text/css" href="wp-content/themes/goring/slick/slick-theme.css">
+		<!-- Owl Carousel Assets -->
+		<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
+			<style>img:is([sizes="auto" i], [sizes^="auto," i]) { contain-intrinsic-size: 3000px 1500px }</style>
+	
+<!-- Search Engine Optimization by Rank Math - https://s.rankmath.com/home -->
+<meta name="description" content="We employ engineers with incredible integration of hands-on OEM training and a recognized PRINCE 2 project management experience that enables them to"/>
+<meta name="robots" content="follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large"/>
+<link rel="canonical" href="index.php" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Home - GORING MEDICAL" />
+<meta property="og:description" content="We employ engineers with incredible integration of hands-on OEM training and a recognized PRINCE 2 project management experience that enables them to" />
+<meta property="og:url" content="index.php" />
+<meta property="og:site_name" content="GORING MEDICAL" />
+<meta property="og:updated_time" content="2021-07-07T09:35:03+00:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Home - GORING MEDICAL" />
+<meta name="twitter:description" content="We employ engineers with incredible integration of hands-on OEM training and a recognized PRINCE 2 project management experience that enables them to" />
+<script type="application/ld+json" class="rank-math-schema">{"@context":"https://schema.org","@graph":[{"@type":["MedicalBusiness","Organization"],"@id":"https://goringmedicalprojects.com/#organization","name":"GORING MEDICAL","url":"https://goringmedicalprojects.com","openingHours":["Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday 09:00-17:00"]},{"@type":"WebSite","@id":"https://goringmedicalprojects.com/#website","url":"https://goringmedicalprojects.com","name":"GORING MEDICAL","publisher":{"@id":"https://goringmedicalprojects.com/#organization"},"inLanguage":"en-US","potentialAction":{"@type":"SearchAction","target":"https://goringmedicalprojects.com/?s={search_term_string}","query-input":"required name=search_term_string"}},{"@type":"Person","@id":"https://goringmedicalprojects.com/author/gmp_live/","name":"gmp_live","url":"https://goringmedicalprojects.com/author/gmp_live/","image":{"@type":"ImageObject","@id":"https://secure.gravatar.com/avatar/6596d982e8576451e757ac1c0ecdb426?s=96&amp;d=mm&amp;r=g","url":"https://secure.gravatar.com/avatar/6596d982e8576451e757ac1c0ecdb426?s=96&amp;d=mm&amp;r=g","caption":"gmp_live","inLanguage":"en-US"},"worksFor":{"@id":"https://goringmedicalprojects.com/#organization"}},{"@type":"WebPage","@id":"https://goringmedicalprojects.com/#webpage","url":"https://goringmedicalprojects.com/","name":"Home - GORING MEDICAL","datePublished":"2019-01-31T10:59:32+00:00","dateModified":"2021-07-07T09:35:03+00:00","author":{"@id":"https://goringmedicalprojects.com/author/gmp_live/"},"isPartOf":{"@id":"https://goringmedicalprojects.com/#website"},"inLanguage":"en-US"}]}</script>
+<!-- /Rank Math WordPress SEO plugin -->
+
+<script type="text/javascript">
+/* <![CDATA[ */
+window._wpemojiSettings = {"baseUrl":"https:\/\/s.w.org\/images\/core\/emoji\/15.0.3\/72x72\/","ext":".png","svgUrl":"https:\/\/s.w.org\/images\/core\/emoji\/15.0.3\/svg\/","svgExt":".svg","source":{"concatemoji":"https:\/\/goringmedicalprojects.com\/wp-includes\/js\/wp-emoji-release.min.js?ver=6.7.5"}};
+/*! This file is auto-generated */
+!function(i,n){var o,s,e;function c(e){try{var t={supportTests:e,timestamp:(new Date).valueOf()};sessionStorage.setItem(o,JSON.stringify(t))}catch(e){}}function p(e,t,n){e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(t,0,0);var t=new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data),r=(e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(n,0,0),new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data));return t.every(function(e,t){return e===r[t]})}function u(e,t,n){switch(t){case"flag":return n(e,"\ud83c\udff3\ufe0f\u200d\u26a7\ufe0f","\ud83c\udff3\ufe0f\u200b\u26a7\ufe0f")?!1:!n(e,"\ud83c\uddfa\ud83c\uddf3","\ud83c\uddfa\u200b\ud83c\uddf3")&&!n(e,"\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f","\ud83c\udff4\u200b\udb40\udc67\u200b\udb40\udc62\u200b\udb40\udc65\u200b\udb40\udc6e\u200b\udb40\udc67\u200b\udb40\udc7f");case"emoji":return!n(e,"\ud83d\udc26\u200d\u2b1b","\ud83d\udc26\u200b\u2b1b")}return!1}function f(e,t,n){var r="undefined"!=typeof WorkerGlobalScope&&self instanceof WorkerGlobalScope?new OffscreenCanvas(300,150):i.createElement("canvas"),a=r.getContext("2d",{willReadFrequently:!0}),o=(a.textBaseline="top",a.font="600 32px Arial",{});return e.forEach(function(e){o[e]=t(a,e,n)}),o}function t(e){var t=i.createElement("script");t.src=e,t.defer=!0,i.head.appendChild(t)}"undefined"!=typeof Promise&&(o="wpEmojiSettingsSupports",s=["flag","emoji"],n.supports={everything:!0,everythingExceptFlag:!0},e=new Promise(function(e){i.addEventListener("DOMContentLoaded",e,{once:!0})}),new Promise(function(t){var n=function(){try{var e=JSON.parse(sessionStorage.getItem(o));if("object"==typeof e&&"number"==typeof e.timestamp&&(new Date).valueOf()<e.timestamp+604800&&"object"==typeof e.supportTests)return e.supportTests}catch(e){}return null}();if(!n){if("undefined"!=typeof Worker&&"undefined"!=typeof OffscreenCanvas&&"undefined"!=typeof URL&&URL.createObjectURL&&"undefined"!=typeof Blob)try{var e="postMessage("+f.toString()+"("+[JSON.stringify(s),u.toString(),p.toString()].join(",")+"));",r=new Blob([e],{type:"text/javascript"}),a=new Worker(URL.createObjectURL(r),{name:"wpTestEmojiSupports"});return void(a.onmessage=function(e){c(n=e.data),a.terminate(),t(n)})}catch(e){}c(n=f(s,u,p))}t(n)}).then(function(e){for(var t in e)n.supports[t]=e[t],n.supports.everything=n.supports.everything&&n.supports[t],"flag"!==t&&(n.supports.everythingExceptFlag=n.supports.everythingExceptFlag&&n.supports[t]);n.supports.everythingExceptFlag=n.supports.everythingExceptFlag&&!n.supports.flag,n.DOMReady=!1,n.readyCallback=function(){n.DOMReady=!0}}).then(function(){return e}).then(function(){var e;n.supports.everything||(n.readyCallback(),(e=n.source||{}).concatemoji?t(e.concatemoji):e.wpemoji&&e.twemoji&&(t(e.twemoji),t(e.wpemoji)))}))}((window,document),window._wpemojiSettings);
+/* ]]> */
+</script>
+<style id='wp-emoji-styles-inline-css' type='text/css'>
+
+	img.wp-smiley, img.emoji {
+		display: inline !important;
+		border: none !important;
+		box-shadow: none !important;
+		height: 1em !important;
+		width: 1em !important;
+		margin: 0 0.07em !important;
+		vertical-align: -0.1em !important;
+		background: none !important;
+		padding: 0 !important;
+	}
+</style>
+<link rel='stylesheet' id='wp-block-library-css' href='wp-includes/css/dist/block-library/style.mind70e.css?ver=6.7.5' type='text/css' media='all' />
+<style id='classic-theme-styles-inline-css' type='text/css'>
+/*! This file is auto-generated */
+.wp-block-button__link{color:#fff;background-color:#32373c;border-radius:9999px;box-shadow:none;text-decoration:none;padding:calc(.667em + 2px) calc(1.333em + 2px);font-size:1.125em}.wp-block-file__button{background:#32373c;color:#fff;text-decoration:none}
+</style>
+<style id='global-styles-inline-css' type='text/css'>
+:root{--wp--preset--aspect-ratio--square: 1;--wp--preset--aspect-ratio--4-3: 4/3;--wp--preset--aspect-ratio--3-4: 3/4;--wp--preset--aspect-ratio--3-2: 3/2;--wp--preset--aspect-ratio--2-3: 2/3;--wp--preset--aspect-ratio--16-9: 16/9;--wp--preset--aspect-ratio--9-16: 9/16;--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: #abb8c3;--wp--preset--color--white: #ffffff;--wp--preset--color--pale-pink: #f78da7;--wp--preset--color--vivid-red: #cf2e2e;--wp--preset--color--luminous-vivid-orange: #ff6900;--wp--preset--color--luminous-vivid-amber: #fcb900;--wp--preset--color--light-green-cyan: #7bdcb5;--wp--preset--color--vivid-green-cyan: #00d084;--wp--preset--color--pale-cyan-blue: #8ed1fc;--wp--preset--color--vivid-cyan-blue: #0693e3;--wp--preset--color--vivid-purple: #9b51e0;--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg,rgba(6,147,227,1) 0%,rgb(155,81,224) 100%);--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%);--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg,rgba(252,185,0,1) 0%,rgba(255,105,0,1) 100%);--wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg,rgba(255,105,0,1) 0%,rgb(207,46,46) 100%);--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg,rgb(238,238,238) 0%,rgb(169,184,195) 100%);--wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg,rgb(74,234,220) 0%,rgb(151,120,209) 20%,rgb(207,42,186) 40%,rgb(238,44,130) 60%,rgb(251,105,98) 80%,rgb(254,248,76) 100%);--wp--preset--gradient--blush-light-purple: linear-gradient(135deg,rgb(255,206,236) 0%,rgb(152,150,240) 100%);--wp--preset--gradient--blush-bordeaux: linear-gradient(135deg,rgb(254,205,165) 0%,rgb(254,45,45) 50%,rgb(107,0,62) 100%);--wp--preset--gradient--luminous-dusk: linear-gradient(135deg,rgb(255,203,112) 0%,rgb(199,81,192) 50%,rgb(65,88,208) 100%);--wp--preset--gradient--pale-ocean: linear-gradient(135deg,rgb(255,245,203) 0%,rgb(182,227,212) 50%,rgb(51,167,181) 100%);--wp--preset--gradient--electric-grass: linear-gradient(135deg,rgb(202,248,128) 0%,rgb(113,206,126) 100%);--wp--preset--gradient--midnight: linear-gradient(135deg,rgb(2,3,129) 0%,rgb(40,116,252) 100%);--wp--preset--font-size--small: 13px;--wp--preset--font-size--medium: 20px;--wp--preset--font-size--large: 36px;--wp--preset--font-size--x-large: 42px;--wp--preset--spacing--20: 0.44rem;--wp--preset--spacing--30: 0.67rem;--wp--preset--spacing--40: 1rem;--wp--preset--spacing--50: 1.5rem;--wp--preset--spacing--60: 2.25rem;--wp--preset--spacing--70: 3.38rem;--wp--preset--spacing--80: 5.06rem;--wp--preset--shadow--natural: 6px 6px 9px rgba(0, 0, 0, 0.2);--wp--preset--shadow--deep: 12px 12px 50px rgba(0, 0, 0, 0.4);--wp--preset--shadow--sharp: 6px 6px 0px rgba(0, 0, 0, 0.2);--wp--preset--shadow--outlined: 6px 6px 0px -3px rgba(255, 255, 255, 1), 6px 6px rgba(0, 0, 0, 1);--wp--preset--shadow--crisp: 6px 6px 0px rgba(0, 0, 0, 1);}:where(.is-layout-flex){gap: 0.5em;}:where(.is-layout-grid){gap: 0.5em;}body .is-layout-flex{display: flex;}.is-layout-flex{flex-wrap: wrap;align-items: center;}.is-layout-flex > :is(*, div){margin: 0;}body .is-layout-grid{display: grid;}.is-layout-grid > :is(*, div){margin: 0;}:where(.wp-block-columns.is-layout-flex){gap: 2em;}:where(.wp-block-columns.is-layout-grid){gap: 2em;}:where(.wp-block-post-template.is-layout-flex){gap: 1.25em;}:where(.wp-block-post-template.is-layout-grid){gap: 1.25em;}.has-black-color{color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-color{color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-color{color: var(--wp--preset--color--white) !important;}.has-pale-pink-color{color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-color{color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-color{color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-color{color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-color{color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-color{color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-color{color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-color{color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-color{color: var(--wp--preset--color--vivid-purple) !important;}.has-black-background-color{background-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-background-color{background-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-background-color{background-color: var(--wp--preset--color--white) !important;}.has-pale-pink-background-color{background-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-background-color{background-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-background-color{background-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-background-color{background-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-background-color{background-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-background-color{background-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-background-color{background-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-background-color{background-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-background-color{background-color: var(--wp--preset--color--vivid-purple) !important;}.has-black-border-color{border-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-border-color{border-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-border-color{border-color: var(--wp--preset--color--white) !important;}.has-pale-pink-border-color{border-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-border-color{border-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-border-color{border-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-border-color{border-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-border-color{border-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-border-color{border-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-border-color{border-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-border-color{border-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-border-color{border-color: var(--wp--preset--color--vivid-purple) !important;}.has-vivid-cyan-blue-to-vivid-purple-gradient-background{background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;}.has-light-green-cyan-to-vivid-green-cyan-gradient-background{background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;}.has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;}.has-luminous-vivid-orange-to-vivid-red-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;}.has-very-light-gray-to-cyan-bluish-gray-gradient-background{background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;}.has-cool-to-warm-spectrum-gradient-background{background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;}.has-blush-light-purple-gradient-background{background: var(--wp--preset--gradient--blush-light-purple) !important;}.has-blush-bordeaux-gradient-background{background: var(--wp--preset--gradient--blush-bordeaux) !important;}.has-luminous-dusk-gradient-background{background: var(--wp--preset--gradient--luminous-dusk) !important;}.has-pale-ocean-gradient-background{background: var(--wp--preset--gradient--pale-ocean) !important;}.has-electric-grass-gradient-background{background: var(--wp--preset--gradient--electric-grass) !important;}.has-midnight-gradient-background{background: var(--wp--preset--gradient--midnight) !important;}.has-small-font-size{font-size: var(--wp--preset--font-size--small) !important;}.has-medium-font-size{font-size: var(--wp--preset--font-size--medium) !important;}.has-large-font-size{font-size: var(--wp--preset--font-size--large) !important;}.has-x-large-font-size{font-size: var(--wp--preset--font-size--x-large) !important;}
+:where(.wp-block-post-template.is-layout-flex){gap: 1.25em;}:where(.wp-block-post-template.is-layout-grid){gap: 1.25em;}
+:where(.wp-block-columns.is-layout-flex){gap: 2em;}:where(.wp-block-columns.is-layout-grid){gap: 2em;}
+:root :where(.wp-block-pullquote){font-size: 1.5em;line-height: 1.6;}
+</style>
+<link rel='stylesheet' id='contact-form-7-css' href='wp-content/plugins/contact-form-7/includes/css/styles5697.css?ver=5.5.3' type='text/css' media='all' />
+<link rel='stylesheet' id='newsletter-css' href='wp-content/plugins/newsletter/styleba31.css?ver=7.3.3' type='text/css' media='all' />
+<link rel='stylesheet' id='js_composer_front-css' href='wp-content/plugins/composer/assets/css/js_composer.min7263.css?ver=5.4.4' type='text/css' media='all' />
+<script type="text/javascript" src="wp-includes/js/jquery/jquery.minf43b.js?ver=3.7.1" id="jquery-core-js"></script>
+<script type="text/javascript" src="wp-includes/js/jquery/jquery-migrate.min5589.js?ver=3.4.1" id="jquery-migrate-js"></script>
+<link rel="https://api.w.org/" href="wp-json/index.php" /><link rel="alternate" title="JSON" type="application/json" href="wp-json/wp/v2/pages/5.json" /><link rel="EditURI" type="application/rsd+xml" title="RSD" href="xmlrpc0db0.php?rsd" />
+<meta name="generator" content="WordPress 6.7.5" />
+<link rel='shortlink' href='index.php' />
+<link rel="alternate" title="oEmbed (JSON)" type="application/json+oembed" href="wp-json/oembed/1.0/embed8fe8.json?url=https%3A%2F%2Fgoringmedicalprojects.com%2F" />
+<link rel="alternate" title="oEmbed (XML)" type="text/xml+oembed" href="wp-json/oembed/1.0/embedd654?url=https%3A%2F%2Fgoringmedicalprojects.com%2F&amp;format=xml" />
+<meta name="generator" content="Powered by WPBakery Page Builder - drag and drop page builder for WordPress."/>
+<!--[if lte IE 9]><link rel="stylesheet" type="text/css" href="https://goringmedicalprojects.com/wp-content/plugins/composer/assets/css/vc_lte_ie9.min.css" media="screen"><![endif]--><style type="text/css" data-type="vc_shortcodes-custom-css">.vc_custom_1549014128490{margin-top: 100px !important;}.vc_custom_1582637486551{background-image: url(wp-content/uploads/2020/02/what-makes-us-different-1250x5605c8d.jpg?id=149) !important;}.vc_custom_1549019544446{padding-top: 25px !important;padding-bottom: 60px !important;background-image: url(https://goringmedicalprojects.com/wp-content/uploads/2019/02/service-bg.jpg?id=42) !important;background-position: center !important;background-repeat: no-repeat !important;background-size: cover !important;}.vc_custom_1565971878636{padding-top: 50px !important;padding-bottom: 50px !important;}.vc_custom_1565971866350{padding-top: 50px !important;padding-bottom: 50px !important;}.vc_custom_1606745245854{padding-top: 40px !important;}.vc_custom_1549013265978{margin-bottom: 40px !important;}.vc_custom_1606786052995{margin-top: 0px !important;margin-bottom: 0px !important;border-top-width: 0px !important;border-bottom-width: 0px !important;padding-top: 0px !important;padding-bottom: 0px !important;}.vc_custom_1604548737672{margin-top: 0px !important;margin-bottom: 0px !important;border-top-width: 0px !important;border-bottom-width: 0px !important;padding-top: 0px !important;padding-bottom: 0px !important;}.vc_custom_1549017875033{padding-bottom: 40px !important;}.vc_custom_1565971841189{margin-top: 30px !important;}.vc_custom_1625650041042{padding-bottom: 30px !important;}.vc_custom_1603747667509{margin-top: 0px !important;margin-bottom: 0px !important;border-top-width: 0px !important;border-bottom-width: 0px !important;padding-top: 0px !important;padding-bottom: 0px !important;}.vc_custom_1625650502510{padding-bottom: 30px !important;}.vc_custom_1549021069492{margin-top: 0px !important;margin-bottom: 0px !important;padding-top: 0px !important;padding-bottom: 0px !important;}</style><noscript><style type="text/css"> .wpb_animate_when_almost_visible { opacity: 1; }</style></noscript>		
+		<meta name="google-site-verification" content="cbsGP5B99j-IeRU774Y_uddg6K0KKY8piB4HFsX93eg" />
+	</head>
+	<body class="home page-template-default page page-id-5 wpb-js-composer js-comp-ver-5.4.4 vc_responsive" >
+		<!-- Wrapper Start -->
+		<div id="wrapper">
+
+			<div class="top-sec">
+				<div class="container">
+					<div class="row LC-row">
+
+						<div class="col-md-3 logo-area">
+							<div class="logo_sec">
+								<a href="index.php" title="GORING MEDICAL" rel="home">
+									<img class="img-responsive" src="wp-content/themes/goring/images/logo.png" alt="GORING MEDICAL" />
+								</a>
+							</div>
+							<div class="resnav-toggle">
+								<button type="button" data-id="#resnav" data-action="nav-toggle"><i class="fa fa-bars"></i></button>
+							</div>
+						</div>
+
+						<div class="col-md-9 col-md-offset-0 TA-area">
+							<div class="top-address">
+								<div class="address-box">
+									<span>Email Address</span>
+									<a href="mailto:info@goringmedicalprojects.com">info@goringmedicalprojects.com</a>
+								</div>
+								<div class="address-box">
+									<span>Phone Number</span>
+									<a href="tel:+44 (0) 7584 598 649">+44 (0) 7584 598 649</a>
+								</div>
+								<div class="address-box">
+									<span>Office Address</span>
+									<p>Goring Medical Projects Ltd, 1 Trinity Farm Cottages, Barnby Moor, Retford, Notts, UK, DN22 8QW</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<header class="header-sec">
+				<div class="container">
+					<div class="row Menu-Search-row">
+						<div class="col-md-8 Menu-col">
+							<div class="navbar navbar-inverse navbar-static-top" role="navigation">
+								<div class="navbar-header">
+									<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+										<span class="sr-only">Toggle navigation</span>
+										<span class="icon-bar"></span>
+										<span class="icon-bar"></span>
+										<span class="icon-bar"></span>
+									</button>
+								</div>
+								<div class="navbar-collapse collapse">
+									<div class="menu-main-menu-container"><ul id="menu-main-menu" class="nav navbar-nav"><li id="menu-item-23" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-home current-menu-item page_item page-item-5 current_page_item menu-item-23 active"><a title="Home" href="index.php">Home</a></li>
+<li id="menu-item-22" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-22"><a title="About Us" href="about-us/index.php">About Us</a></li>
+<li id="menu-item-21" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-21"><a title="Services" href="services/index.php">Services</a></li>
+<li id="menu-item-20" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-20"><a title="Testimonials" href="testimonials/index.php">Testimonials</a></li>
+<li id="menu-item-275" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-275"><a title="Project Gallery" href="my-projects/index.php">Project Gallery</a></li>
+<li id="menu-item-19" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-19"><a title="Case Studies" href="case-studies/index.php">Case Studies</a></li>
+<li id="menu-item-602" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-602"><a title="Blog" href="blog/index.php">Blog</a></li>
+<li id="menu-item-18" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-18"><a title="Contact Us" href="contact-us/index.php">Contact Us</a></li>
+</ul></div>								</div>
+							</div>
+						</div>
+
+						<div class="col-md-3 col-md-offset-1 Search-col">
+							<div class="search-box">
+																<div class="widget"><form role="search" method="get" id="searchform" class="searchform" action="https://goringmedicalprojects.com/">
+				<div>
+					<label class="screen-reader-text" for="s">Search for:</label>
+					<input type="text" value="" name="s" id="s" />
+					<input type="submit" id="searchsubmit" value="Search" />
+				</div>
+			</form></div>															</div>
+						</div>
+					</div>
+				</div>
+			</header>
+			<div class="resnav-collapse" id="resnav">
+				<button type="button" data-id="#resnav" data-action="nav-close" class="resnav-close"><i class="fa fa-times"></i></button>
+				<div class="resnav-area">
+					<div class="resnav-search-box">
+												<div class="widget"><form role="search" method="get" id="searchform" class="searchform" action="https://goringmedicalprojects.com/">
+				<div>
+					<label class="screen-reader-text" for="s">Search for:</label>
+					<input type="text" value="" name="s" id="s" />
+					<input type="submit" id="searchsubmit" value="Search" />
+				</div>
+			</form></div>											</div>
+					<div class="resnav-nav-menu-box">
+						<ul id="menu-main-menu-1" class="list-unstyled mb-0"><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-home current-menu-item page_item page-item-5 current_page_item menu-item-23 active"><a title="Home" href="index.php">Home</a></li>
+<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-22"><a title="About Us" href="about-us/index.php">About Us</a></li>
+<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-21"><a title="Services" href="services/index.php">Services</a></li>
+<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-20"><a title="Testimonials" href="testimonials/index.php">Testimonials</a></li>
+<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-275"><a title="Project Gallery" href="my-projects/index.php">Project Gallery</a></li>
+<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-19"><a title="Case Studies" href="case-studies/index.php">Case Studies</a></li>
+<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-602"><a title="Blog" href="blog/index.php">Blog</a></li>
+<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-18"><a title="Contact Us" href="contact-us/index.php">Contact Us</a></li>
+</ul>					</div>
+					<div class="resnav-contact-details">
+						<ul class="list-unstyled mb-0">
+							<li><strong>Phone:</strong> 
+								<span><a href="tel:+44 (0) 7584 598 649">+44 (0) 7584 598 649</a></span>
+							</li>
+							<li><strong>Email:</strong>
+								<span><a href="mailto:info@goringmedicalprojects.com">info@goringmedicalprojects.com</a></span>
+							</li>
+							<li><strong>Address:</strong>
+								<span><p>Goring Medical Projects Ltd, 1 Trinity Farm Cottages, Barnby Moor, Retford, Notts, UK, DN22 8QW</p></span>
+							</li>
+						</ul>
+					</div>
+					<div class="resnav-social-links">
+						<ul class="list-unstyled mb-0">
+							<li><a href="https://www.facebook.com/Goring-Medical-Projects-100270068728705/"  target="_blank"><i class="fa fa-facebook-f"></i></a></li>
+							<!-- 							<li><a href="javascript:;"><i class="fab fa-twitter"></i></a></li>
+<li><a href="javascript:;"><i class="fab fa-instagram"></i></a></li> -->
+							<li><a href="https://www.linkedin.com/company/goring-medical-projects-ltd" target="_blank"><i class="fa fa-linkedin"></i></a></li>
+						</ul>
+					</div>
+				</div>
+			</div><div class="container">
+
+ <div data-vc-full-width="true" data-vc-full-width-init="false" data-vc-stretch-content="true" class="vc_row wpb_row vc_row-fluid vc_row-no-padding"><div class="wpb_column vc_column_container vc_col-sm-12"><div class="vc_column-inner "><div class="wpb_wrapper">
+	<div class="wpb_text_column wpb_content_element " >
+		<div class="wpb_wrapper">
+			    <!-- start here -->
+    <section class="home-banner">
+  <div class="home-slider">
+                  <div class="slider-bio">
+       <div class="img-box">
+          <img decoding="async" src="wp-content/uploads/2020/10/IMG_4946-scaled.jpg" alt="">
+        </div>
+        <div class="text-box">
+          <div class="welcome-title">Welcome To</div>
+          <div class="banner-title">GORING MEDICAL</div>
+          <div class="banner-title-2">PROJECTS  LTD</div>
+		  <p>Projects Managed With Close Attention And Care</p>
+         <a class="btn btn-default" href="#">READ MORE</a>
+         <a class="btn btn-primary" href="#">VIEW SERVICES</a>
+        </div>
+      </div>
+              <div class="slider-bio">
+       <div class="img-box">
+          <img decoding="async" src="wp-content/uploads/2020/10/IMG_4090-scaled.jpg" alt="">
+        </div>
+        <div class="text-box">
+          <div class="welcome-title">Welcome To</div>
+          <div class="banner-title">GORING MEDICAL</div>
+          <div class="banner-title-2">PROJECTS  LTD</div>
+		  <p>Projects Managed With Close Attention And Care</p>
+         <a class="btn btn-default" href="#">READ MORE</a>
+         <a class="btn btn-primary" href="#">VIEW SERVICES</a>
+        </div>
+      </div>
+              <div class="slider-bio">
+       <div class="img-box">
+          <img decoding="async" src="wp-content/uploads/2020/10/IMG_3632-scaled.jpg" alt="">
+        </div>
+        <div class="text-box">
+          <div class="welcome-title">Welcome To</div>
+          <div class="banner-title">GORING MEDICAL</div>
+          <div class="banner-title-2">PROJECTS  LTD</div>
+		  <p>Projects Managed With Close Attention And Care</p>
+         <a class="btn btn-default" href="#">READ MORE</a>
+         <a class="btn btn-primary" href="#">VIEW SERVICES</a>
+        </div>
+      </div>
+      
+  </div>
+</section>    <!-- end here -->
+    
+
+		</div>
+	</div>
+</div></div></div></div><div class="vc_row-full-width vc_clearfix"></div><div class="vc_row wpb_row vc_row-fluid why-choose choose-why"><div class="wpb_column vc_column_container vc_col-sm-12"><div class="vc_column-inner "><div class="wpb_wrapper"><h2 style="text-align: center" class="vc_custom_heading wpb_animate_when_almost_visible wpb_zoomIn zoomIn vc_custom_1549013265978" >WHY CHOOSE US</h2>
+	<div class="wpb_text_column wpb_content_element  vc_custom_1606786052995" >
+		<div class="wpb_wrapper">
+			<ul>
+<li>We are trusted by OEM’S and work closely with them.</li>
+<li>We have been trained by the OEM’S.</li>
+<li>We have a proven track record.</li>
+<li>We are PRINCE 2 certified with over 10 years of experience in managing large scale medical equipment projects.</li>
+<li>We are constantly investing in more and more tools and now have multiple ramp kits in house.</li>
+<li>We invest in training to constantly stay up to date with the latest products.</li>
+<li>We do not buy and sell systems; we supply technical and project management services to not compete with our customers.</li>
+</ul>
+
+		</div>
+	</div>
+</div></div></div><div class="choose-box wpb_column vc_column_container vc_col-sm-4"><div class="vc_column-inner "><div class="wpb_wrapper">
+	<div  class="wpb_single_image wpb_content_element vc_align_center">
+		
+		<figure class="wpb_wrapper vc_figure">
+			<div class="vc_single_image-wrapper   vc_box_border_grey"><img decoding="async" width="48" height="41" src="wp-content/uploads/2019/01/icon1.jpg" class="vc_single_image-img attachment-full" alt="" /></div>
+		</figure>
+	</div>
+<h4 style="text-align: center" class="vc_custom_heading" >COMPETENT</h4>
+	<div class="wpb_text_column wpb_content_element " >
+		<div class="wpb_wrapper">
+			<p style="text-align: center;">We employ engineers with incredible integration of hands-on OEM training and a recognized PRINCE 2 project management experience that enables them to proficiently ramp down OEM magnets and handle customers’ requirements competently and successfully.</p>
+
+		</div>
+	</div>
+</div></div></div><div class="choose-box wpb_column vc_column_container vc_col-sm-4"><div class="vc_column-inner "><div class="wpb_wrapper">
+	<div  class="wpb_single_image wpb_content_element vc_align_center">
+		
+		<figure class="wpb_wrapper vc_figure">
+			<div class="vc_single_image-wrapper   vc_box_border_grey"><img decoding="async" width="48" height="41" src="wp-content/uploads/2019/01/icon2.jpg" class="vc_single_image-img attachment-full" alt="" /></div>
+		</figure>
+	</div>
+<h4 style="text-align: center" class="vc_custom_heading" >CLIENT-ORIENTED</h4>
+	<div class="wpb_text_column wpb_content_element " >
+		<div class="wpb_wrapper">
+			<p style="text-align: center;">Carefully understanding the client’s needs and the restraints encountered enables us to provide an accurate scope of technical services and Project management, coupled with Quality Assurance (QA) audit, logistical management, patient data deletion, and Portable Appliance Testing (PAT).</p>
+
+		</div>
+	</div>
+</div></div></div><div class="choose-box wpb_column vc_column_container vc_col-sm-4"><div class="vc_column-inner "><div class="wpb_wrapper">
+	<div  class="wpb_single_image wpb_content_element vc_align_center">
+		
+		<figure class="wpb_wrapper vc_figure">
+			<div class="vc_single_image-wrapper   vc_box_border_grey"><img decoding="async" width="48" height="41" src="wp-content/uploads/2019/01/icon3.jpg" class="vc_single_image-img attachment-full" alt="" /></div>
+		</figure>
+	</div>
+<h4 style="text-align: center" class="vc_custom_heading" >TIMELY &amp; BUDGET FRIENDLY</h4>
+	<div class="wpb_text_column wpb_content_element " >
+		<div class="wpb_wrapper">
+			<p style="text-align: center;">Our expert engineers hold the expertise that enables them to perform successful project execution and problem-solving strategies without any additional support, which allows for timely and budget-friendly project completion. Depending on the client’s specifications and requirements, we can offer these services independently, in combination, or as a whole process.</p>
+
+		</div>
+	</div>
+</div></div></div><div class="wpb_column vc_column_container vc_col-sm-12"><div class="vc_column-inner vc_custom_1606745245854"><div class="wpb_wrapper">
+	<div class="wpb_text_column wpb_content_element " >
+		<div class="wpb_wrapper">
+			<p style="text-align: center;"><a href="contact-us/index.php">Please contact us for more information or to receive a follow up request</a></p>
+
+		</div>
+	</div>
+</div></div></div></div><div class="vc_row wpb_row vc_row-fluid about-sec vc_custom_1549014128490"><div class="wpb_column vc_column_container vc_col-sm-6"><div class="vc_column-inner "><div class="wpb_wrapper"><h2 style="text-align: left" class="vc_custom_heading" >Goring Medical Projects Ltd</h2><h3 style="text-align: left" class="vc_custom_heading" >Projects Managed With Precision and Accuracy</h3>
+	<div class="wpb_text_column wpb_content_element " >
+		<div class="wpb_wrapper">
+			<p>Goring Medical Projects Limited has been established with the aim to provide technical support and Project management to the public and private healthcare sector, particularly hospitals, medical centers, equipment brokers and resellers. We conduct our professional operations to provide Project Management and technical solutions of diagnostic imaging equipment in healthcare environments, to provide our clients with the most reliable and flexible service in the industry.</p>
+<p>We extend our technical services to the healthcare sector by embracing a broad spectrum of Project Management and Medical Engineering that includes system installation, de-installation, relocation, ramp down, inspection, system evaluation, mobile/relocatable and modular design. Our extensive range of technical medical support services expands to every business dealing with the healthcare sector, from Original Equipment Manufacturers (OEM’s), equipment brokers and resellers, hospital radiology and procurement managers, to hospitals estate managers and third party diagnostic imaging equipment providers.</p>
+<p>Accurate and competent, ramp down, relocation and maintenance of diagnostic medical equipment used in medical centers or hospitals is a matter of great concern and thus, requires complete expert handling. We understand that the Radiology departments depends not only on the quality of treatment and health care provided, but also greatly on the correct running and efficiencies of the medical equipment.</p>
+<p>Goring Medical employ OEM (Original Equipment Manufacturers) engineers who are highly trained to handle the technicalities of all the medical equipment with industry recognized PRINCE 2 project management experience. Hence, possessing a vast technical knowledge and applied experience in Project Management of diagnostic imaging equipment in hospitals, we ensure to provide our clients with a highly standardized and quality assured services.</p>
+<p>Being professionally committed to deliver excellence, we hold ourselves responsible for inspecting and managing the ramp down of diagnostic machines, de-installation, installation, and relocation of medical equipment, ensuring that the breakdown of the equipment and accidents made during diagnosis and treatment can be avoided and eliminated altogether. Our high-quality audits help you, our valued client, to achieve the highest possible value for your equipment.</p>
+<p>Nevertheless, we are able to live by our professional commitments due to the focused support of our expert engineers who possess technical OEM equipment training combined with PRINCE 2 certified Project Management that enables them to handle customers’ requirements competently, carefully and cost-effectively. Additionally, this means our resources, that is the Engineer/project manager, is sufficiently trained to complete all the technical tasks as opposed to requiring numerous staff members on board for the project. Consequently, we can save time, cost and extra hassle for our clients.</p>
+
+		</div>
+	</div>
+</div></div></div><div class="wpb_column vc_column_container vc_col-sm-6"><div class="vc_column-inner "><div class="wpb_wrapper">
+	<div  class="wpb_single_image wpb_content_element vc_align_left  vc_custom_1604548737672">
+		
+		<figure class="wpb_wrapper vc_figure">
+			<div class="vc_single_image-wrapper   vc_box_border_grey"><img loading="lazy" decoding="async" width="555" height="541" src="wp-content/uploads/2020/11/Untitled-1.jpg" class="vc_single_image-img attachment-full" alt="" srcset="wp-content/uploads/2020/11/Untitled-1.jpg 555w, wp-content/uploads/2020/11/Untitled-1-300x292.jpg 300w" sizes="auto, (max-width: 555px) 100vw, 555px" /></div>
+		</figure>
+	</div>
+</div></div></div></div><div data-vc-full-width="true" data-vc-full-width-init="false" class="vc_row wpb_row vc_row-fluid makes-section vc_custom_1582637486551 vc_row-has-fill"><div class="wpb_column vc_column_container vc_col-sm-6"><div class="vc_column-inner "><div class="wpb_wrapper"><h2 style="text-align: left" class="vc_custom_heading" >What makes us different?</h2>
+	<div class="wpb_text_column wpb_content_element  makes-diff" >
+		<div class="wpb_wrapper">
+			<ul>
+<li>A proven track record within the industry.</li>
+<li>Emergency on-site diagnosis and repair (Ad-Hoc).</li>
+<li>Detailed QA and audit reports with OEM knowledge of the systems.</li>
+<li>Unrivaled attention to detail and customer service.</li>
+<li>Cost efficiency coupled with exceptional support.</li>
+<li>Multi-modality, Multi-OEM capability, and tool inventory.</li>
+<li>A large rigging inventory available for rental.</li>
+<li>Certified training in engineering, project management, and health and safety.</li>
+<li>Ramp down of GE, Siemens, Canon, and Philips MRI within 24 hours.</li>
+</ul>
+
+		</div>
+	</div>
+</div></div></div><div class="wpb_column vc_column_container vc_col-sm-6"><div class="vc_column-inner "><div class="wpb_wrapper"></div></div></div></div><div class="vc_row-full-width vc_clearfix"></div><div data-vc-full-width="true" data-vc-full-width-init="false" class="vc_row wpb_row vc_row-fluid vc_custom_1549019544446 vc_row-has-fill"><div class="wpb_column vc_column_container vc_col-sm-12"><div class="vc_column-inner "><div class="wpb_wrapper"><h2 style="text-align: center" class="vc_custom_heading wpb_animate_when_almost_visible wpb_zoomIn zoomIn vc_custom_1549017875033" >OUR SERVICES</h2>
+	<div class="wpb_text_column wpb_content_element  vc_custom_1565971841189" >
+		<div class="wpb_wrapper">
+			    <!-- start here -->
+    <div class="service-slider">
+				<div class="serviceItem">
+		<div class="service-box">
+			<a class="imgLink" data-fancybox href="wp-content/uploads/2019/08/project_management.jpg"><img decoding="async" class="img-responsive" src="wp-content/uploads/2019/08/project_management.jpg" alt="Project Management"/></a>
+			<p>The Goring Medical Team are dedicated to our customers.We ensure that we always consider our stakeholders by fully engaging with them.			</p>
+			<h3><a href="service/project-management/index.php">Project Management</a></h3>
+		</div>
+	</div>
+			<div class="serviceItem">
+		<div class="service-box">
+			<a class="imgLink" data-fancybox href="wp-content/uploads/2019/08/System_Inspection_and_audit.jpg"><img decoding="async" class="img-responsive" src="wp-content/uploads/2019/08/System_Inspection_and_audit.jpg" alt="QA, SYSTEM INSPECTION &#038; REPORTING (MRI PDF &#038; CT PDF)"/></a>
+			<p>Through means of our OEM engineering background and training, we competently offer detailed quality assurance			</p>
+			<h3><a href="service/system-inspection-and-audit/index.php">QA, SYSTEM INSPECTION &#038; REPORTING (MRI PDF &#038; CT PDF)</a></h3>
+		</div>
+	</div>
+			<div class="serviceItem">
+		<div class="service-box">
+			<a class="imgLink" data-fancybox href="wp-content/uploads/2019/08/imgpsh_fullsize_anim-1-scaled.jpg"><img decoding="async" class="img-responsive" src="wp-content/uploads/2019/08/imgpsh_fullsize_anim-1-scaled.jpg" alt="MEDICAL EQUIPMENT DEINSTALLATION, INSTALLATION &#038; RELOCATION"/></a>
+			<p>We recognize the significance of hospital services, the need for efficient equipment and the requirement of safe			</p>
+			<h3><a href="service/system-installation/index.php">MEDICAL EQUIPMENT DEINSTALLATION, INSTALLATION &#038; RELOCATION</a></h3>
+		</div>
+	</div>
+			<div class="serviceItem">
+		<div class="service-box">
+			<a class="imgLink" data-fancybox href="wp-content/uploads/2020/10/2E8B8FFA-9783-4A66-AD08-8192FA15D723-1-scaled.jpg"><img decoding="async" class="img-responsive" src="wp-content/uploads/2020/10/2E8B8FFA-9783-4A66-AD08-8192FA15D723-1-scaled.jpg" alt="RAMP DOWN/UP &#038; SHIMMING"/></a>
+			<p>We now have three of our own ramp kits to serve your project needs quickly and professionally.			</p>
+			<h3><a href="service/system-ramp-down/index.php">RAMP DOWN/UP &#038; SHIMMING</a></h3>
+		</div>
+	</div>
+			<div class="serviceItem">
+		<div class="service-box">
+			<a class="imgLink" data-fancybox href="wp-content/uploads/2019/08/mobile_relocatable_design.jpg"><img decoding="async" class="img-responsive" src="wp-content/uploads/2019/08/mobile_relocatable_design.jpg" alt="Mobile, Modular and Relocatable Design"/></a>
+			<p>We have extensive experience of mobile, modular and relocatable design.			</p>
+			<h3><a href="service/mobile-relocatable-design/index.php">Mobile, Modular and Relocatable Design</a></h3>
+		</div>
+	</div>
+			<div class="serviceItem">
+		<div class="service-box">
+			<a class="imgLink" data-fancybox href="wp-content/uploads/2019/08/blancco.jpg"><img decoding="async" class="img-responsive" src="wp-content/uploads/2019/08/blancco.jpg" alt="BLANCCO CERTIFIED DATA DELETION"/></a>
+			<p>We understand the confidentiality of patient’s data in the healthcare environment. 			</p>
+			<h3><a href="service/patient-data-deletion/index.php">BLANCCO CERTIFIED DATA DELETION</a></h3>
+		</div>
+	</div>
+			<div class="serviceItem">
+		<div class="service-box">
+			<a class="imgLink" data-fancybox href="wp-content/uploads/2020/02/Coldhead-Replacement-3-scaled.jpg"><img decoding="async" class="img-responsive" src="wp-content/uploads/2020/02/Coldhead-Replacement-3-scaled.jpg" alt="Helium Leak Detection, Coldhead exchange, repairs and rigging tool rental"/></a>
+			<p>Goring Medical Projects Limited provide cryogenic fault finding, cryogenic repair			</p>
+			<h3><a href="service/helium-leak-detector-and-cold-head-exchange/index.php">Helium Leak Detection, Coldhead exchange, repairs and rigging tool rental</a></h3>
+		</div>
+	</div>
+	</div>    <!-- end here -->
+    
+
+		</div>
+	</div>
+</div></div></div></div><div class="vc_row-full-width vc_clearfix"></div><div class="vc_row wpb_row vc_row-fluid vc_custom_1565971878636"><div class="wpb_column vc_column_container vc_col-sm-12"><div class="vc_column-inner "><div class="wpb_wrapper"><div style="text-align: center" class="vc_custom_heading ramp-down-heading wpb_animate_when_almost_visible wpb_zoomIn zoomIn vc_custom_1625650041042" ><a href="service/system-ramp-down/index.php" target=" _blank">RAMP DOWN</a></div><div class="vc_row wpb_row vc_inner vc_row-fluid vc_row-o-equal-height vc_row-o-content-middle vc_row-flex"><div class="wpb_column vc_column_container vc_col-sm-6"><div class="vc_column-inner "><div class="wpb_wrapper">
+	<div class="wpb_text_column wpb_content_element  ramp-detail" >
+		<div class="wpb_wrapper">
+			<p>Goring Medical Projects provide ramp down service in a planned way to facilitate deinstallation and system removal. We can also provide reactive support for emergency situations whereby you need to ramp up the MRI and recover the system following a spontaneous quench. We can also provide the ramp kit and other installation tools and services upon request.</p>
+<p>We can provide ramping services for GE, Siemens, Canon/Toshiba and Philips. We stock multiple sets of Ramp Power Supplies to provide ramp down service all over Europe.</p>
+
+		</div>
+	</div>
+</div></div></div><div class="wpb_column vc_column_container vc_col-sm-6"><div class="vc_column-inner "><div class="wpb_wrapper">
+	<div class="wpb_text_column wpb_content_element  vc_custom_1603747667509" >
+		<div class="wpb_wrapper">
+			  <!-- start here -->
+   <div class="ramp-down-area">
+  <div class="ramp-down-slider">
+    <div class="slider-item">
+      <div class="img-box">
+        <video controls><source src="wp-content/uploads/2020/10/Img-3597-1.mp4" type="video/mp4"><source src="wp-content/uploads/2020/10/Img-3597-1.mp4" type="video/ogg">Your browser does not support the video tag.</video>
+      </div>
+    </div>
+    <div class="slider-item">
+      <div class="img-box">
+        <img decoding="async" src="wp-content/uploads/2020/10/2E8B8FFA-9783-4A66-AD08-8192FA15D723-1-scaled.jpg" alt="">
+      </div>
+    </div>
+    <div class="slider-item">
+      <div class="img-box">
+        <img decoding="async" src="wp-content/uploads/2020/10/3FD9A2D9-513F-45AF-9519-7B14DC83B53F-scaled.jpg" alt="">
+      </div>
+    </div>
+    <div class="slider-item">
+      <div class="img-box">
+        <img decoding="async" src="wp-content/uploads/2020/10/27D61AEE-50A2-49A2-B8D7-8B5646AC3231-scaled.jpg" alt="">
+      </div>
+    </div>
+    <div class="slider-item">
+      <div class="img-box">
+        <img decoding="async" src="wp-content/uploads/2020/10/29C14069-654A-4B27-923F-5D27FABD83D0-scaled.jpg" alt="">
+      </div>
+    </div>
+    <div class="slider-item">
+      <div class="img-box">
+        <img decoding="async" src="wp-content/uploads/2020/10/27D61AEE-50A2-49A2-B8D7-8B5646AC3231-scaled.jpg" alt="">
+      </div>
+    </div>
+    <div class="slider-item">
+      <div class="img-box">
+        <img decoding="async" src="wp-content/uploads/2020/10/29C14069-654A-4B27-923F-5D27FABD83D0-scaled.jpg" alt="">
+      </div>
+    </div>
+    <div class="slider-item">
+      <div class="img-box">
+        <img decoding="async" src="wp-content/uploads/2020/10/141B9C1A-34BE-4076-8CC4-D8529C74D56F-scaled.jpg" alt="">
+      </div>
+    </div>
+    <div class="slider-item">
+      <div class="img-box">
+        <img decoding="async" src="wp-content/uploads/2020/10/020224A3-B0AE-461E-A9AE-DD318A5010A2-scaled.jpg" alt="">
+      </div>
+    </div>
+    <div class="slider-item">
+      <div class="img-box">
+        <img decoding="async" src="wp-content/uploads/2020/10/51160F0A-E6FB-4410-A919-29CF9102D146-scaled.jpg" alt="">
+      </div>
+    </div>
+    <div class="slider-item">
+      <div class="img-box">
+        <img decoding="async" src="wp-content/uploads/2020/10/065796BE-78F8-4480-8D9F-50CD8AFA5B31-scaled.jpg" alt="">
+      </div>
+    </div>
+    <div class="slider-item">
+      <div class="img-box">
+        <img decoding="async" src="wp-content/uploads/2020/10/IMG_3078-1-scaled.jpg" alt="">
+      </div>
+    </div>
+    <div class="slider-item">
+      <div class="img-box">
+        <img decoding="async" src="wp-content/uploads/2020/10/IMG_3102-1-scaled.jpg" alt="">
+      </div>
+    </div>
+    <div class="slider-item">
+      <div class="img-box">
+        <img decoding="async" src="wp-content/uploads/2020/10/IMG_3568-scaled.jpg" alt="">
+      </div>
+    </div>
+    <div class="slider-item">
+      <div class="img-box">
+        <img decoding="async" src="wp-content/uploads/2020/10/IMG_3574-scaled.jpg" alt="">
+      </div>
+    </div>
+    <div class="slider-item">
+      <div class="img-box">
+        <img decoding="async" src="wp-content/uploads/2020/10/IMG_3587-scaled.jpg" alt="">
+      </div>
+    </div>
+    <div class="slider-item">
+      <div class="img-box">
+        <img decoding="async" src="wp-content/uploads/2020/10/IMG_3601-scaled.jpg" alt="">
+      </div>
+    </div>
+    <div class="slider-item">
+      <div class="img-box">
+        <img decoding="async" src="wp-content/uploads/2020/10/IMG_5093-scaled.jpg" alt="">
+      </div>
+    </div>
+    <div class="slider-item">
+      <div class="img-box">
+        <img decoding="async" src="wp-content/uploads/2020/10/IMG_5103-scaled.jpg" alt="">
+      </div>
+    </div>
+    <div class="slider-item">
+      <div class="img-box">
+        <img decoding="async" src="wp-content/uploads/2020/10/62134247942__8257A5EC-3E57-49FA-B6EF-8965BE35826A-scaled.jpg" alt="">
+      </div>
+    </div>
+    <div class="slider-item">
+      <div class="img-box">
+        <img decoding="async" src="wp-content/uploads/2020/10/02C0B4B5-7F00-435A-99BD-8BC6A7CD4A81-1-scaled.jpg" alt="">
+      </div>
+    </div>
+  </div>
+</div>  <!-- end here -->
+  
+
+		</div>
+	</div>
+</div></div></div></div></div></div></div></div><div class="vc_row wpb_row vc_row-fluid vc_custom_1565971866350"><div class="wpb_column vc_column_container vc_col-sm-12"><div class="vc_column-inner "><div class="wpb_wrapper"><div style="text-align: center" class="vc_custom_heading section-heading wpb_animate_when_almost_visible wpb_zoomIn zoomIn vc_custom_1625650502510" >TESTIMONIALS</div>
+	<div class="wpb_text_column wpb_content_element  vc_custom_1549021069492" >
+		<div class="wpb_wrapper">
+			    <!-- start here -->
+    <div class="testimonial-slider">
+          <div class="testimonial-slider-item">
+      <div class="testi-box">
+        <div class="testi-bio">
+          <p>First, must say that we were very fortunate to find company and people so dedicated and professional. As a start-up company with a vision in providing the best radiology diagnostics and healthcare, we are so happy that we chose Goring Medical Projects Ltd for powering up our Siemens Symphony TIM 1.5T MRI system. We are sure that our cooperation will not end there and we will continue to rely on Goring Medical Projects Ltd moving forwards. I would also like to take the opportunity to thank Wayne Goring for being so kind and helpful and for setting new standards in professionalism. His knowledge of MRI systems is outstanding and without precedent! thank you once again and wish you all the best!</p>
+        </div>
+        <div class="author-box">
+          <div class="author-img"><img decoding="async" class="img-responsive" src="wp-content/uploads/2020/10/imgpsh_fullsize_anim_testimonal.jpg" alt="image"/></div>
+          <div class="author-name">
+            <small class="an-head">ALEKSANDAR MUSTAFU</small>
+            <span>OWNER</span>
+          </div>
+        </div>
+      </div>
+    </div>
+        <div class="testimonial-slider-item">
+      <div class="testi-box">
+        <div class="testi-bio">
+          <p>After several projects together, we’re very pleased with the technical expertise of Goring Medical Projects and appreciate their professional efficiency. They make things simple – offering great trouble-shooting and clever recommendations that help us cut costs and do things in smarter ways. The MRI team solved problems before we even knew they existed (and certainly before they became greater concerns).</p>
+<p>This team has our back! I have trust in Goring Medical Projects Ltd that I have for no other EU/UK service provider—all around an impressive and engaged group. I’m regularly looking for ways to involve Goring Medical Projects Ltd more and more in our projects.</p>
+        </div>
+        <div class="author-box">
+          <div class="author-img"><img decoding="async" class="img-responsive" src="wp-content/uploads/2020/10/imgpsh_fullsize_anim_22__testimonail_2.jpg" alt="image"/></div>
+          <div class="author-name">
+            <small class="an-head">BRIAN VON GUNTEN &#8211; VP EUROPEAN OPERATIONS</small>
+            <span>BLOCK IMAGING - HOLT - MICHIGAN - UNITED STATES</span>
+          </div>
+        </div>
+      </div>
+    </div>
+        <div class="testimonial-slider-item">
+      <div class="testi-box">
+        <div class="testi-bio">
+          <p>In a very short timescale, Goring Medical Projects worked together to provide us with excellent technical advice and comprehensive and professional project management services. They have provided excellent customer service, equipment and value in a very short timescale and I look forward to working with them again for future requirements.</p>
+        </div>
+        <div class="author-box">
+          <div class="author-img"><img decoding="async" class="img-responsive" src="wp-content/uploads/2020/10/imgpsh_fullsize_anim_22_tesimonal_4.jpg" alt="image"/></div>
+          <div class="author-name">
+            <small class="an-head">COREY FRAZER</small>
+            <span>IMAGING MANAGER</span>
+          </div>
+        </div>
+      </div>
+    </div>
+        <div class="testimonial-slider-item">
+      <div class="testi-box">
+        <div class="testi-bio">
+          <p>I am emailing you to let you know how happy I am with your service. Starting with Wayne who stayed in contact throughout the process updating me, he has received several phone calls from me asking questions and has always been contactable. Your team are so professional and knowledgeable. Wayne was always on-hand and helpful throughout. His hands on training let me understand a lot more about the service we now can offer with the help of work by Wayne and his team. Lastly, you worked professionally, considerately, with excellent knowledge. I could not recommend the service received any higher.</p>
+        </div>
+        <div class="author-box">
+          <div class="author-img"><img decoding="async" class="img-responsive" src="wp-content/uploads/2020/10/imgpsh_fullsize_anim_22_testimonal_3.jpg" alt="image"/></div>
+          <div class="author-name">
+            <small class="an-head">Joe Piconas</small>
+            <span>Managing Director</span>
+          </div>
+        </div>
+      </div>
+    </div>
+     
+</div>    <!-- end here -->
+    
+
+		</div>
+	</div>
+</div></div></div></div>
+
+</div>
+<footer class="footer-sec">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-3 footContent">
+				<div class="footer-bio">
+					<h4>ABOUT US</h4>
+					<div class="footer-social">
+						<a href="https://www.linkedin.com/company/goring-medical-projects-ltd" target="_blank"><span><i class="fa fa-linkedin"></i></span>Follow us on Linkedin</a>
+					</div>
+					<div class="footer-social">
+						<a href="https://www.facebook.com/Goring-Medical-Projects-100270068728705/" target="_blank"><span><i class="fa fa-facebook"></i></span>Follow us on FaceBook</a>
+					</div>
+
+				</div>
+			</div>
+			<div class="col-md-6 footContent">
+				<div class="row footer-bio footer-nav">
+					<div class="col-md-4 col-lg-4 col-sm-4 footLinks">
+						<h4>QUICK LINK</h4>
+						<div class="menu-main-menu-container"><ul id="menu-main-menu-2" class=""><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-home current-menu-item page_item page-item-5 current_page_item menu-item-23"><a href="index.php" aria-current="page">Home</a></li>
+<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-22"><a href="about-us/index.php">About Us</a></li>
+<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-21"><a href="services/index.php">Services</a></li>
+<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-20"><a href="testimonials/index.php">Testimonials</a></li>
+<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-275"><a href="my-projects/index.php">Project Gallery</a></li>
+<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-19"><a href="case-studies/index.php">Case Studies</a></li>
+<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-602"><a href="blog/index.php">Blog</a></li>
+<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-18"><a href="contact-us/index.php">Contact Us</a></li>
+</ul></div>					</div>	
+					<div class="col-md-5 col-lg-5 col-sm-5 footLinks">
+						<h4>Services Links</h4>
+						<div class="menu-services-menu-container"><ul id="menu-services-menu" class=""><li id="menu-item-127" class="menu-item menu-item-type-post_type menu-item-object-service menu-item-127"><a href="service/project-management/index.php">Project management</a></li>
+<li id="menu-item-128" class="menu-item menu-item-type-post_type menu-item-object-service menu-item-128"><a href="service/system-inspection-and-audit/index.php">QA, system inspection, <br>  evaluation &#038; reporting <br> (MRI PDF &#038; CT PDF)</a></li>
+<li id="menu-item-129" class="menu-item menu-item-type-post_type menu-item-object-service menu-item-129"><a href="service/system-installation/index.php">Medical equipment deinstallation, installation &#038; relocation</a></li>
+<li id="menu-item-130" class="menu-item menu-item-type-post_type menu-item-object-service menu-item-130"><a href="service/system-ramp-down/index.php">Ramp down/shimming</a></li>
+<li id="menu-item-131" class="menu-item menu-item-type-post_type menu-item-object-service menu-item-131"><a href="service/mobile-relocatable-design/index.php">Mobile, modular and relocatable design</a></li>
+<li id="menu-item-132" class="menu-item menu-item-type-post_type menu-item-object-service menu-item-132"><a href="service/patient-data-deletion/index.php">Blancco certified data deletion</a></li>
+<li id="menu-item-568" class="menu-item menu-item-type-post_type menu-item-object-service menu-item-568"><a href="service/helium-leak-detector-and-cold-head-exchange/index.php">Helium leak detection, coldhead exchange, repairs and rigging tool rental</a></li>
+</ul></div>					</div>
+					<div class="col-md-3 col-lg-3 col-sm-3 footLinks">
+						<h4>Legals</h4>
+						<div class="menu-legal-menu-container"><ul id="menu-legal-menu" class=""><li id="menu-item-519" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-519"><a href="privacy-policy/index.php">Privacy Policy</a></li>
+<li id="menu-item-518" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-518"><a href="terms-conditions/index.php">Terms &#038; Conditions</a></li>
+</ul></div>					</div>
+				</div>
+			</div>
+			<div class="col-md-3 footContent">
+				<div class="footer-bio">
+					<h4>SIGN UP FOR NEWSLETTER</h4>
+					<div class="newsletter">
+												<div class="widget"><div class="tnp tnp-widget"><form method="post" action="https://goringmedicalprojects.com/?na=s">
+
+<input type="hidden" name="nr" value="widget"><input type="hidden" name="nlang" value=""><div class="tnp-field tnp-field-email"><label for="tnp-1">Email</label>
+<input class="tnp-email" type="email" name="ne" id="tnp-1" value="" required></div>
+<div class="tnp-field tnp-field-button"><input class="tnp-submit" type="submit" value="Subscribe" >
+</div>
+</form>
+</div></div>											</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="copyright">
+		<p>© Copyright, Goring  Medical Projects Ltd, All Rights Reserved.</p>
+	</div>
+</footer>
+</div> <!--Wrapper End-->
+
+
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<link rel='stylesheet' id='animate-css-css' href='wp-content/plugins/composer/assets/lib/bower/animate-css/animate.min7263.css?ver=5.4.4' type='text/css' media='all' />
+<script type="text/javascript" src="wp-includes/js/dist/vendor/wp-polyfill.min2c7c.js?ver=3.15.0" id="wp-polyfill-js"></script>
+<script type="text/javascript" id="contact-form-7-js-extra">
+/* <![CDATA[ */
+var wpcf7 = {"api":{"root":"https:\/\/goringmedicalprojects.com\/wp-json\/","namespace":"contact-form-7\/v1"}};
+/* ]]> */
+</script>
+<script type="text/javascript" src="wp-content/plugins/contact-form-7/includes/js/index5697.js?ver=5.5.3" id="contact-form-7-js"></script>
+<script type="text/javascript" src="wp-content/plugins/composer/assets/js/dist/js_composer_front.min7263.js?ver=5.4.4" id="wpb_composer_front_js-js"></script>
+<script type="text/javascript" src="wp-content/plugins/composer/assets/lib/waypoints/waypoints.min7263.js?ver=5.4.4" id="waypoints-js"></script>
+<script src="wp-content/themes/goring/js/bootstrap.min.js"></script>
+<script src="wp-content/themes/goring/slick/slick.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+<script src="wp-content/themes/goring/js/custom.js"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+
+</body>
+
+<!-- Mirrored from goringmedicalprojects.com/ by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 06 Aug 2026 14:36:37 GMT -->
+</html>
+<?php ob_end_flush(); ?>

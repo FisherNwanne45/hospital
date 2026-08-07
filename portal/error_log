@@ -1,0 +1,69 @@
+[30-Jul-2023 22:56:12 UTC] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in /home/galvtfxw/public_html/portal/resources/session.php on line 14
+[30-Jul-2023 22:56:12 UTC] PHP Warning:  Undefined array key "login_user" in /home/galvtfxw/public_html/portal/resources/session.php on line 16
+[30-Jul-2023 22:56:12 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 20
+[30-Jul-2023 22:56:12 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 22
+[30-Jul-2023 22:56:29 UTC] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in /home/galvtfxw/public_html/portal/resources/session.php on line 14
+[30-Jul-2023 22:56:29 UTC] PHP Warning:  Undefined array key "login_user" in /home/galvtfxw/public_html/portal/resources/session.php on line 16
+[30-Jul-2023 22:56:29 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 20
+[30-Jul-2023 22:56:29 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 22
+[30-Jul-2023 23:00:25 UTC] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in /home/galvtfxw/public_html/portal/resources/session.php on line 14
+[30-Jul-2023 23:00:25 UTC] PHP Warning:  Undefined array key "login_user" in /home/galvtfxw/public_html/portal/resources/session.php on line 16
+[30-Jul-2023 23:00:25 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 20
+[30-Jul-2023 23:00:25 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 22
+[30-Jul-2023 23:00:39 UTC] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in /home/galvtfxw/public_html/portal/resources/session.php on line 14
+[30-Jul-2023 23:00:39 UTC] PHP Warning:  Undefined array key "login_user" in /home/galvtfxw/public_html/portal/resources/session.php on line 16
+[30-Jul-2023 23:00:39 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 20
+[30-Jul-2023 23:00:39 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 22
+[30-Jul-2023 23:01:15 UTC] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in /home/galvtfxw/public_html/portal/resources/session.php on line 14
+[30-Jul-2023 23:01:15 UTC] PHP Warning:  Undefined array key "login_user" in /home/galvtfxw/public_html/portal/resources/session.php on line 16
+[30-Jul-2023 23:01:15 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 20
+[30-Jul-2023 23:01:15 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 22
+[30-Jul-2023 23:04:11 UTC] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in /home/galvtfxw/public_html/portal/resources/session.php on line 14
+[30-Jul-2023 23:04:11 UTC] PHP Warning:  Undefined array key "login_user" in /home/galvtfxw/public_html/portal/resources/session.php on line 16
+[30-Jul-2023 23:04:11 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 20
+[30-Jul-2023 23:04:11 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 22
+[30-Jul-2023 23:04:51 UTC] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in /home/galvtfxw/public_html/portal/resources/session.php on line 14
+[30-Jul-2023 23:04:52 UTC] PHP Warning:  Undefined array key "login_user" in /home/galvtfxw/public_html/portal/resources/session.php on line 16
+[30-Jul-2023 23:04:52 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 20
+[30-Jul-2023 23:04:52 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 22
+[30-Jul-2023 23:05:25 UTC] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in /home/galvtfxw/public_html/portal/resources/session.php on line 14
+[30-Jul-2023 23:05:25 UTC] PHP Warning:  Undefined array key "login_user" in /home/galvtfxw/public_html/portal/resources/session.php on line 16
+[30-Jul-2023 23:05:25 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 20
+[30-Jul-2023 23:05:25 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 22
+[30-Jul-2023 23:08:11 UTC] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in /home/galvtfxw/public_html/portal/resources/session.php on line 14
+[30-Jul-2023 23:08:11 UTC] PHP Warning:  Undefined array key "login_user" in /home/galvtfxw/public_html/portal/resources/session.php on line 16
+[30-Jul-2023 23:08:11 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 20
+[30-Jul-2023 23:08:11 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 22
+[30-Jul-2023 23:09:05 UTC] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in /home/galvtfxw/public_html/portal/resources/session.php on line 14
+[30-Jul-2023 23:09:05 UTC] PHP Warning:  Undefined array key "login_user" in /home/galvtfxw/public_html/portal/resources/session.php on line 16
+[30-Jul-2023 23:09:05 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 20
+[30-Jul-2023 23:09:05 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 22
+[30-Jul-2023 23:09:16 UTC] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in /home/galvtfxw/public_html/portal/resources/session.php on line 14
+[30-Jul-2023 23:09:16 UTC] PHP Warning:  Undefined array key "login_user" in /home/galvtfxw/public_html/portal/resources/session.php on line 16
+[30-Jul-2023 23:09:16 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 20
+[30-Jul-2023 23:09:16 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 22
+[30-Jul-2023 23:10:00 UTC] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in /home/galvtfxw/public_html/portal/resources/session.php on line 14
+[30-Jul-2023 23:10:00 UTC] PHP Warning:  Undefined array key "login_user" in /home/galvtfxw/public_html/portal/resources/session.php on line 16
+[30-Jul-2023 23:10:00 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 20
+[30-Jul-2023 23:10:00 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 22
+[30-Jul-2023 23:10:28 UTC] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in /home/galvtfxw/public_html/portal/resources/session.php on line 14
+[30-Jul-2023 23:10:28 UTC] PHP Warning:  Undefined array key "login_user" in /home/galvtfxw/public_html/portal/resources/session.php on line 16
+[30-Jul-2023 23:10:28 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 20
+[30-Jul-2023 23:10:28 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 22
+[30-Jul-2023 23:10:51 UTC] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in /home/galvtfxw/public_html/portal/resources/session.php on line 14
+[30-Jul-2023 23:10:51 UTC] PHP Warning:  Undefined array key "login_user" in /home/galvtfxw/public_html/portal/resources/session.php on line 16
+[30-Jul-2023 23:10:51 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 20
+[30-Jul-2023 23:10:51 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 22
+[30-Jul-2023 23:11:28 UTC] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in /home/galvtfxw/public_html/portal/resources/session.php on line 14
+[30-Jul-2023 23:11:28 UTC] PHP Warning:  Undefined array key "login_user" in /home/galvtfxw/public_html/portal/resources/session.php on line 16
+[30-Jul-2023 23:11:28 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 20
+[30-Jul-2023 23:11:28 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/resources/session.php on line 22
+[30-Jul-2023 23:21:10 UTC] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in /home/galvtfxw/public_html/portal/access/session.php on line 14
+[30-Jul-2023 23:21:10 UTC] PHP Warning:  Undefined array key "login_user" in /home/galvtfxw/public_html/portal/access/session.php on line 16
+[30-Jul-2023 23:21:10 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/access/session.php on line 20
+[30-Jul-2023 23:21:10 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/galvtfxw/public_html/portal/access/session.php on line 22
+[30-Jul-2023 23:48:03 UTC] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in /home/galvtfxw/public_html/portal/access/session.php on line 14
+[30-Jul-2023 23:48:19 UTC] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in /home/galvtfxw/public_html/portal/access/session.php on line 14
+[30-Jul-2023 23:52:42 UTC] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in /home/galvtfxw/public_html/portal/access/session.php on line 14
+[30-Jul-2023 23:53:20 UTC] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in /home/galvtfxw/public_html/portal/access/session.php on line 14
+[30-Jul-2023 23:55:08 UTC] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in /home/galvtfxw/public_html/portal/access/session.php on line 14

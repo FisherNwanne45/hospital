@@ -2,7 +2,7 @@
 /* pih settings bridge */
 $__pihRoot = __DIR__;
 while (!file_exists($__pihRoot . '/short.php') && dirname($__pihRoot) !== $__pihRoot) {
-    $__pihRoot = dirname($__pihRoot);
+	$__pihRoot = dirname($__pihRoot);
 }
 require_once $__pihRoot . '/short.php';
 
@@ -69,17 +69,18 @@ $__pihPortalUrl = $__pihBase !== ''
 	? $__pihBase . '/portal/index.php'
 	: '/portal/index.php';
 $__pihMap = [
-    'Home - GORING MEDICAL - GORING MEDICAL' => $name . ' - Hospital Theme',
-    'GORING MEDICAL' => (string) $name,
-    'info@goringmedicalprojects.com' => (string) $email,
-    '+44 (0) 7584 598 649' => (string) $phone,
-    'Goring Medical Projects Ltd, 1 Trinity Farm Cottages, Barnby Moor, Retford, Notts, UK, DN22 8QW' => (string) $addr,
-    '© Copyright, Goring  Medical Projects Ltd, All Rights Reserved.' => '© Copyright, ' . (string) $name . ', All Rights Reserved.',
-    'index.html' => 'index.php',
+	'Home - GORING MEDICAL - GORING MEDICAL' => $name . ' - Hospital Theme',
+	'GORING MEDICAL' => (string) $name,
+	'Goring Medical' => (string) $name,
+	'info@goringmedicalprojects.com' => (string) $email,
+	'+44 (0) 7584 598 649' => (string) $phone,
+	'Goring Medical Projects Ltd, 1 Trinity Farm Cottages, Barnby Moor, Retford, Notts, UK, DN22 8QW' => (string) $addr,
+	'© Copyright, Goring  Medical Projects Ltd, All Rights Reserved.' => '© Copyright, ' . (string) $name . ', All Rights Reserved.',
+	'index.html' => 'index.php',
 ];
 
 ob_start(function ($__html) use ($__pihMap, $__pihThemeBase, $__pihLogoUrl, $__pihFaviconUrl, $__pihPortalUrl) {
-    $__html = str_replace(array_keys($__pihMap), array_values($__pihMap), $__html);
+	$__html = str_replace(array_keys($__pihMap), array_values($__pihMap), $__html);
 
 	// Normalize mirrored logo/favicon references to admin-configured branding URLs.
 	$__html = preg_replace(
@@ -93,12 +94,12 @@ ob_start(function ($__html) use ($__pihMap, $__pihThemeBase, $__pihLogoUrl, $__p
 		$__html
 	);
 
-    // Rebase mirrored WP asset URLs so CSS/JS/images load from this theme folder on all routes.
-    $__html = preg_replace(
-        '~(?<=[("\'=])(?:\.\./)*(wp-content|wp-includes|wp-json)/~i',
-        $__pihThemeBase . '/$1/',
-        $__html
-    );
+	// Rebase mirrored WP asset URLs so CSS/JS/images load from this theme folder on all routes.
+	$__html = preg_replace(
+		'~(?<=[("\'=])(?:\.\./)*(wp-content|wp-includes|wp-json)/~i',
+		$__pihThemeBase . '/$1/',
+		$__html
+	);
 
 	// If logo/favicon was rebased first, force it back to admin-configured branding URLs.
 	$__html = str_replace(
@@ -197,22 +198,22 @@ ob_start(function ($__html) use ($__pihMap, $__pihThemeBase, $__pihLogoUrl, $__p
 		$__html
 	);
 
-    return $__html;
+	return $__html;
 });
 ?>
 <!-- end: Call to action -->
 <!-- Footer -->
 <footer id="footer">
 
-    <div class="copyright-content">
-        <div class="container">
-            <a href="<?php echo $url; ?>/hipaa-notice-of-privacy-practices.php">HIPAA and Compliance</a>
-            <br><a href="<?php echo $url; ?>/healthixinfo.php">Healthix</a>
+	<div class="copyright-content">
+		<div class="container">
+			<a href="<?php echo $url; ?>/hipaa-notice-of-privacy-practices.php">HIPAA and Compliance</a>
+			<br><a href="<?php echo $url; ?>/healthixinfo.php">Healthix</a>
 
-            <div class="copyright-text text-center">&copy; 2025 <?php echo $name; ?>
-                All Rights Reserved.</div>
-        </div>
-    </div>
+			<div class="copyright-text text-center">&copy; 2025 <?php echo $name; ?>
+				All Rights Reserved.</div>
+		</div>
+	</div>
 </footer>
 <!-- end: Footer -->
 
@@ -228,7 +229,7 @@ ob_start(function ($__html) use ($__pihMap, $__pihThemeBase, $__pihLogoUrl, $__p
 
 
 <?php if (!empty($tawk)) {
-    echo $tawk;
+	echo $tawk;
 } ?>
 
 
